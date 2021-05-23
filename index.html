@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="vue.min.js"></script>
+  <title>Unix Time Converter</title>
+
+  <style>
+    html,
+    body,
+    .page {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      zoom: 1;
+    }
+
+    body {
+      font-size: 16px;
+      color: #333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+
+    }
+
+    .navbar {
+      height: 64px;
+      width: 100%;
+      padding: 8px 16px;
+      background: cornflowerblue;
+      color: #fff;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    .navbar>* {
+      vertical-align: middle;
+    }
+
+    .main {
+      height: calc(100% - 64px);
+      width: 100%;
+      padding: 16px;
+      text-align: center;
+      background: #efefef;
+    }
+
+    .content {
+      margin: 0 auto;
+      width: 100%;
+      max-width: 800px;
+      text-align: left;
+    }
+
+    .btn {
+      display: inline-block;
+      height: 36px;
+      min-width: 64px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      line-height: 27px;
+      background: cornflowerblue;
+      color: #fff;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s linear;
+      vertical-align: middle;
+    }
+
+    .btn:hover {
+      opacity: 0.75;
+    }
+
+    .btn:active {
+      opacity: 1;
+    }
+
+    input {
+      display: inline-block;
+      height: 36px;
+      padding: 4px 12px;
+      border-radius: 8px;
+      vertical-align: middle;
+      border: solid 2px cornflowerblue;
+      font-size: 16px;
+    }
+
+    input:focus {
+      outline: none;
+    }
+
+    .time-input {
+      width: 70px;
+    }
+
+    .time-year-input {
+      width: 90px;
+    }
+
+    .card {
+      display: block;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 2px #666;
+      background: #fff;
+    }
+
+    .row {
+      display: block;
+      padding: 24px 16px;
+      border-bottom: solid 1px #eee;
+    }
+
+    .row:last-child {
+      border: none;
+    }
+
+    .row>div {
+      margin-bottom: 8px;
+    }
+
+    .row>div:last-child {
+      margin-bottom: 0;
+    }
+
+    .margin-right {
+      margin-right: 8px;
+    }
+
+    .margin-left {
+      margin-left: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    你好
+
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      template: `
+        <div class="page">
+          <div class="navbar">
+            <span>Unix Time Converter</span>
+          </div>
+          <div class="main">
+            <div class="content">
+              <div class="card">
+                <div class="row">
+                  <div>
+                    <span>现在的Unix时间戳：</span>
+                    <span style="margin-right: 64px;">{{ nowUnixTime }}</span>
+                    <span class="btn" @click="clearTick">停止</span>
+                    <span class="btn" @click="setTick">开始</span>  
+                  </div>
+                  <div>
+                    <span>现在的北京时间：</span>
+                    <span>{{ nowTimeString }}</span>
+                  </div> 
+                </div>
+
+                <div class="row">
+                  <div>
+                    <span>Unix 时间戳：</span>
+                    <input v-model="unixTime" type="number" min="31509000" />
+                    <span class="btn" @click="unixToLocal">转换</span>
+                  </div>
+                  <div>
+                    <span>北京时间：</span>
+                    <span>{{ localString }}</span>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div>
+                    <span>北京时间：</span>
+                    <input class="time-year-input" v-model="year" type="number" min="1971" />年
+                    <input class="time-input" v-model="month" type="number" min="1" max="12" />月
+                    <input class="time-input" v-model="day" type="number" min="1" max="31" />日
+                    <input class="time-input margin-left" v-model="hour" type="number" min="0" max="24"/>:
+                    <input class="time-input" v-model="minute" type="number" min="0" max="60" />:
+                    <input class="time-input" v-model="second" type="number" min="0" max="60" />
+                    <span class="btn" @click="localToUnix">转换</span>
+                  </div>
+                  <div>
+                    <span>Unix 时间戳：</span>
+                    <span>{{ unixString }}</span>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+      data() {
+        return {
+          now: new Date(),
+          unixTime: Math.floor(Date.now() / 1000),
+          localString: '',
+          year: new Date().getFullYear(),
+          month: new Date().getMonth() + 1,
+          day: new Date().getDate(),
+          weekday: new Date().getDay(),
+          hour: new Date().getHours(),
+          minute: new Date().getMinutes(),
+          second: new Date().getSeconds(),
+          unixString: ''
+        }
+      },
+      computed: {
+        nowUnixTime() {
+          return Math.floor(this.now.getTime() / 1000)
+        },
+        nowTimeString() {
+          return this.getLocalTimeString(this.now)
+        }
+      },
+      methods: {
+        setTick() {
+          if (this.ticker) {
+            return;
+          }
+          this.ticker = setInterval(() => {
+            this.now = new Date()
+          }, 1000);
+        },
+        clearTick() {
+          clearTimeout(this.ticker);
+          this.ticker = undefined;
+        },
+        toggleTick() {
+          this.ticker ? this.clearTick() : this.setTick()
+        },
+        getTimeUnity(time) {
+          if (!time) {
+            return
+          }
+
+          if (typeof time === 'string' || typeof time === 'number') {
+            time = new Date(time)
+          }
+
+          const year = time.getFullYear();
+          const month = time.getMonth() + 1;
+          const day = time.getDate();
+          const weekday = time.getDay();
+          const hour = time.getHours();
+          const minute = time.getMinutes();
+          const second = time.getSeconds();
+
+          return {
+            year, month, day, weekday, hour, minute, second
+          }
+        },
+        digitFormat(digit) {
+          return digit >= 10 ? '' + digit : '0' + digit
+        },
+        getLocalTimeString(time) {
+          const { year, month, day, hour, minute, second } = this.getTimeUnity(time);
+
+          return `${year}/${this.digitFormat(month)}/${this.digitFormat(day)} ${this.digitFormat(hour)}:${this.digitFormat(minute)}:${this.digitFormat(second)}`
+        },
+        unixToLocal() {
+          this.localString = this.getLocalTimeString(this.unixTime * 1000);
+        },
+        localToUnix() {
+          this.unixString = Math.floor(new Date(this.year, this.month - 1, this.day, this.hour, this.minute, this.second).getTime() / 1000);
+        }
+      },
+
+      created() {
+        this.setTick();
+        this.unixToLocal();
+        this.localToUnix();
+      }
+    })
+  </script>
+</body>
+
+</html>
